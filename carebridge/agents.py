@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -10,6 +11,8 @@ from carebridge.mcp_client import ResourceMCPClient
 from carebridge.resource_directory import get_preparation_checklist, search_resources
 from carebridge.security import detect_prompt_injection, redact_pii, validate_tool_call
 
+
+LOGGER = logging.getLogger(__name__)
 
 NEED_KEYWORDS = {
     "food": ["food", "meal", "groceries", "hungry", "pantry", "snap", "wic"],
@@ -49,6 +52,7 @@ class CaseContext:
     trace: list[AgentTrace] = field(default_factory=list)
     llm_enabled: bool = False
     llm_model: str = ""
+    llm_key_source: str = "not_configured"
     llm_errors: list[str] = field(default_factory=list)
 
 
@@ -92,10 +96,11 @@ class NeedClassifierAgent:
                 return
             except GeminiError as exc:
                 context.llm_errors.append(str(exc))
+                LOGGER.warning("Gemini classification failed: %s", exc)
                 context.trace.append(
                     AgentTrace(
                         agent=self.name,
-                        summary="Gemini classification failed; used deterministic fallback.",
+                        summary=f"Gemini classification failed; used deterministic fallback. Error: {exc}",
                     )
                 )
         self._run_deterministic(context)
@@ -215,10 +220,11 @@ class PlanWriterAgent:
                 return self._run_with_gemini(context)
             except GeminiError as exc:
                 context.llm_errors.append(str(exc))
+                LOGGER.warning("Gemini plan generation failed: %s", exc)
                 context.trace.append(
                     AgentTrace(
                         agent=self.name,
-                        summary="Gemini plan generation failed; used deterministic fallback.",
+                        summary=f"Gemini plan generation failed; used deterministic fallback. Error: {exc}",
                     )
                 )
         return self._run_deterministic(context)
@@ -328,6 +334,7 @@ class PlanWriterAgent:
             "llm": {
                 "enabled": context.llm_enabled,
                 "model": context.llm_model,
+                "key_source": context.llm_key_source,
                 "errors": context.llm_errors,
             },
             "sanitized_request": context.redacted_text,
@@ -385,6 +392,7 @@ def run_carebridge_agent(payload: dict[str, Any]) -> dict[str, Any]:
         language=str(payload.get("language", "English")),
         llm_enabled=llm.configured,
         llm_model=llm.model if llm.configured else "",
+        llm_key_source=llm.key_source,
     )
 
     intake = IntakeAgent()
@@ -396,6 +404,21 @@ def run_carebridge_agent(payload: dict[str, Any]) -> dict[str, Any]:
 
     intake.run(context)
     security.run(context)
+    if context.llm_enabled:
+        context.trace.append(
+            AgentTrace(
+                agent="GeminiRuntime",
+                summary=f"Gemini configured from {context.llm_key_source}; using model {context.llm_model}.",
+            )
+        )
+    else:
+        context.llm_errors.append("Gemini API key was not visible to this process. Set GEMINI_API_KEY or GOOGLE_API_KEY before starting the app.")
+        context.trace.append(
+            AgentTrace(
+                agent="GeminiRuntime",
+                summary="Gemini not configured; using offline deterministic fallback.",
+            )
+        )
     classifier.run(context)
     matcher.run(context)
     safety.run(context)

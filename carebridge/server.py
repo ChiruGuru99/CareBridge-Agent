@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import mimetypes
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -12,6 +13,7 @@ from carebridge.agents import run_carebridge_agent
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB_ROOT = ROOT / "web"
+logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
 
 
 class CareBridgeHandler(BaseHTTPRequestHandler):
@@ -76,4 +78,3 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     run_server(args.host, args.port)
-

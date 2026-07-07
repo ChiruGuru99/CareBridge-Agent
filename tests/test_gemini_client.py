@@ -1,6 +1,6 @@
 import unittest
 
-from carebridge.gemini_client import parse_json_object
+from carebridge.gemini_client import normalize_model_name, parse_json_object
 
 
 class GeminiClientTests(unittest.TestCase):
@@ -13,6 +13,10 @@ class GeminiClientTests(unittest.TestCase):
         payload = parse_json_object('```json\n{"summary": "ok"}\n```')
 
         self.assertEqual(payload["summary"], "ok")
+
+    def test_normalize_model_name_accepts_models_prefix_and_spaces(self):
+        self.assertEqual(normalize_model_name("models/gemini-3.5-flash"), "gemini-3.5-flash")
+        self.assertEqual(normalize_model_name("Gemini 3.5 Flash"), "gemini-3.5-flash")
 
 
 if __name__ == "__main__":

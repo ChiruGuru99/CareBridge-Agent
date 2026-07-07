@@ -47,6 +47,7 @@ function emptyPanels() {
 function renderPlan(plan) {
   els.urgency.textContent = plan.urgency;
   els.urgency.className = `urgency ${plan.urgency === "urgent" ? "chip warn" : ""}`;
+  const llmErrors = plan.llm.errors || [];
 
   els.panels.plan.innerHTML = `
     <div class="summary-grid">
@@ -111,7 +112,8 @@ function renderPlan(plan) {
       <h3>LLM Runtime</h3>
       <div class="chip-row">
         ${chip(plan.llm.enabled ? `Gemini enabled: ${plan.llm.model}` : "offline fallback", plan.llm.enabled ? "warn" : "need")}
-        ${plan.llm.errors.map((item) => chip(item, "danger")).join("")}
+        ${chip(`key source: ${plan.llm.key_source || "not_configured"}`, plan.llm.enabled ? "warn" : "danger")}
+        ${llmErrors.map((item) => chip(item, "danger")).join("")}
       </div>
     </section>
   `;

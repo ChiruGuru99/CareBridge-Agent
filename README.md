@@ -84,7 +84,11 @@ $env:GEMINI_MODEL="gemini-3.5-flash"
 python app.py
 ```
 
+You can also create a local `.env` file copied from `.env.example`. The app loads `.env` automatically, but `.env` is ignored by Git.
+
 The app sends only the redacted request, detected context, resource results, and checklist data to Gemini. Raw phone numbers, emails, SSNs, and street-address patterns are redacted first. The trace and Security tab show whether Gemini mode or offline fallback mode was used.
+
+If the app falls back unexpectedly, check the Security tab or CLI JSON for `llm.errors`, `llm.key_source`, and the `GeminiRuntime` trace entry. They show whether the key was visible to the process and whether Gemini returned an API/model error.
 
 ## CLI Demo
 

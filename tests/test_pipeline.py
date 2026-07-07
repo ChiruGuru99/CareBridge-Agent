@@ -40,6 +40,8 @@ class PipelineTests(unittest.TestCase):
         self.assertIn("[REDACTED_EMAIL]", plan["sanitized_request"])
         self.assertEqual(plan["mode"], "deterministic_fallback")
         self.assertFalse(plan["llm"]["enabled"])
+        self.assertEqual(plan["llm"]["key_source"], "not_configured")
+        self.assertTrue(plan["llm"]["errors"])
         self.assertGreaterEqual(len(plan["resources"]), 1)
         self.assertGreaterEqual(len(plan["trace"]), 5)
 
@@ -49,6 +51,7 @@ class PipelineTests(unittest.TestCase):
         fake_client = fake_client_class.return_value
         fake_client.configured = True
         fake_client.model = "gemini-test"
+        fake_client.key_source = "GEMINI_API_KEY"
         fake_client.generate_json.side_effect = [
             {
                 "needs": ["housing", "food"],
@@ -79,6 +82,7 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(plan["mode"], "gemini")
         self.assertTrue(plan["llm"]["enabled"])
         self.assertEqual(plan["llm"]["model"], "gemini-test")
+        self.assertEqual(plan["llm"]["key_source"], fake_client.key_source)
         self.assertIn("[REDACTED_EMAIL]", plan["sanitized_request"])
         self.assertIn("gemini.generateContent:gemini-test", str(plan["trace"]))
         self.assertEqual(fake_client.generate_json.call_count, 2)
