@@ -31,11 +31,21 @@ class GeminiClient:
     def configured(self) -> bool:
         return bool(self.api_key)
 
-    def generate_json(self, system_instruction: str, user_payload: dict[str, Any]) -> dict[str, Any]:
-        text = self.generate_text(system_instruction, user_payload)
+    def generate_json(
+        self,
+        system_instruction: str,
+        user_payload: dict[str, Any],
+        response_schema: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        text = self.generate_text(system_instruction, user_payload, response_schema=response_schema)
         return parse_json_object(text)
 
-    def generate_text(self, system_instruction: str, user_payload: dict[str, Any]) -> str:
+    def generate_text(
+        self,
+        system_instruction: str,
+        user_payload: dict[str, Any],
+        response_schema: dict[str, Any] | None = None,
+    ) -> str:
         if not self.api_key:
             raise GeminiError("GEMINI_API_KEY or GOOGLE_API_KEY is not configured.")
 
@@ -56,8 +66,11 @@ class GeminiClient:
             "generationConfig": {
                 "temperature": 0.2,
                 "responseMimeType": "application/json",
+                "maxOutputTokens": 2048,
             },
         }
+        if response_schema is not None:
+            body["generationConfig"]["responseSchema"] = response_schema
         data = json.dumps(body).encode("utf-8")
         request = urllib.request.Request(
             endpoint,

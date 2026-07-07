@@ -120,6 +120,15 @@ class NeedClassifierAgent:
                 "allowed_needs": allowed_needs,
                 "urgent_if": URGENCY_KEYWORDS,
             },
+            response_schema={
+                "type": "object",
+                "properties": {
+                    "needs": {"type": "array", "items": {"type": "string", "enum": allowed_needs}},
+                    "urgency": {"type": "string", "enum": ["standard", "urgent"]},
+                    "rationale": {"type": "string"},
+                },
+                "required": ["needs", "urgency"],
+            },
         )
         needs = [need for need in result.get("needs", []) if need in allowed_needs]
         context.needs = needs or ["general_navigation"]
@@ -248,6 +257,25 @@ class PlanWriterAgent:
                 "resources": context.resources[:6],
                 "checklists": context.checklists,
                 "safety_notes": context.safety_flags,
+            },
+            response_schema={
+                "type": "object",
+                "properties": {
+                    "summary": {"type": "string"},
+                    "steps": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {"type": "string"},
+                                "actions": {"type": "array", "items": {"type": "string"}},
+                            },
+                            "required": ["title", "actions"],
+                        },
+                    },
+                    "call_script": {"type": "string"},
+                },
+                "required": ["summary", "steps", "call_script"],
             },
         )
         steps = normalize_steps(result.get("steps"))
