@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CareBridge Agent</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Agents for Good</p>
+        <h1>CareBridge Agent</h1>
+      </div>
+      <div class="status-pill" id="status">Ready</div>
+    </header>
+
+    <main class="workspace">
+      <section class="input-panel" aria-labelledby="case-heading">
+        <h2 id="case-heading">Case Intake</h2>
+        <label for="caseText">Situation</label>
+        <textarea id="caseText" rows="11" placeholder="Describe what help is needed. Avoid including private details when possible."></textarea>
+
+        <div class="field-grid">
+          <label>
+            Location
+            <input id="location" value="Austin, TX">
+          </label>
+          <label>
+            Household
+            <input id="householdSize" type="number" min="1" max="20" value="3">
+          </label>
+          <label>
+            Language
+            <select id="language">
+              <option>English</option>
+              <option>Spanish</option>
+              <option>Hindi</option>
+              <option>French</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="sampleButton" type="button">Load Sample</button>
+          <button id="runButton" type="button" class="primary">Generate Plan</button>
+        </div>
+      </section>
+
+      <section class="output-panel" aria-labelledby="plan-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Agent Output</p>
+            <h2 id="plan-heading">Support Plan</h2>
+          </div>
+          <div class="urgency" id="urgency">No plan yet</div>
+        </div>
+
+        <nav class="tabs" aria-label="Plan views">
+          <button class="tab active" data-tab="plan">Plan</button>
+          <button class="tab" data-tab="resources">Resources</button>
+          <button class="tab" data-tab="security">Security</button>
+          <button class="tab" data-tab="trace">Trace</button>
+        </nav>
+
+        <div id="plan" class="tab-panel active"></div>
+        <div id="resources" class="tab-panel"></div>
+        <div id="security" class="tab-panel"></div>
+        <div id="trace" class="tab-panel"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+

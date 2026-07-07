@@ -1,0 +1,37 @@
+project: CareBridge Agent
+track: Agents for Good
+runtime: stdlib-python-gemini-mcp
+agents:
+  - name: IntakeAgent
+    responsibility: Sanitize user input and preserve enough context for useful planning.
+    guardrails:
+      - redact_email
+      - redact_phone
+      - redact_ssn
+      - redact_address
+  - name: SecurityGuardAgent
+    responsibility: Detect prompt injection, enforce allowed tools, and report risk flags.
+    allowed_tools:
+      - search_resources
+      - get_preparation_checklist
+  - name: NeedClassifierAgent
+    responsibility: Use Gemini when configured, with deterministic fallback, to convert the sanitized request into support categories and urgency.
+    output:
+      - needs
+      - urgency
+      - rationale
+  - name: ResourceMatcherAgent
+    responsibility: Query the local MCP server and rank resources by relevance and location.
+    tools:
+      - search_resources
+      - get_preparation_checklist
+  - name: SafetyReviewAgent
+    responsibility: Add crisis escalation guidance and non-professional-advice disclaimers.
+  - name: PlanWriterAgent
+    responsibility: Use Gemini when configured, with deterministic fallback, to produce a concise, step-by-step action plan with call scripts and document checklist.
+evaluation_concepts:
+  - multi_agent_system
+  - llm_backed_reasoning
+  - mcp_server
+  - security_features
+  - deployability

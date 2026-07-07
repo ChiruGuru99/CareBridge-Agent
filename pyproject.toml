@@ -1,0 +1,14 @@
+[project]
+name = "carebridge-agent"
+version = "0.1.0"
+description = "Privacy-first multi-agent community support navigator for the Agents for Good capstone track."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+carebridge = "carebridge.cli:main"
+
+[tool.unittest]
+start-directory = "tests"
+
